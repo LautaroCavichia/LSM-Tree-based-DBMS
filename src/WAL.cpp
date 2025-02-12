@@ -39,7 +39,6 @@ class WAL {
 
         void clear() {
             log_file.close();
-            remove(log_path.c_str());
-            log_file.open(log_path, ios::app);
+            ofstream new_log(log_path, ios::trunc);
         }
 };

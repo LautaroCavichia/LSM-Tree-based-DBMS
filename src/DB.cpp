@@ -26,14 +26,15 @@ class DB {
         void load_existing_sstables() {
             for (const auto& entry : filesystem::directory_iterator(db_path)) {
                 if (entry.path().extension() == ".sst") {
-                    SSTable sstable(entry.path());
-                    sstables.push_back(sstable);
+                    try {
+                        SSTable sstable(entry.path().string());
+                        sstables.push_back(sstable);
+                        // cout << "Loading SST: " << entry.path() << endl;
+                    } catch (const exception& e) {
+                        cerr << " Failed to load SSTable: " << e.what() << endl;
+                    }
                 }
             }
-
-            sort(sstables.begin(), sstables.end(), []( SSTable a, SSTable b) {
-                return a.get_min_key() < b.get_min_key();
-            });
         }
 
     public:

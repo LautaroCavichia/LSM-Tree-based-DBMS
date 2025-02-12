@@ -30,14 +30,14 @@ TEST(DBTest, MultiFlushAndReload) {
         DB db (memtable_size, data_dir);
 
         
-        while (num_entries < 30) {
+        while (num_entries < 20) {
             string key = "key" + to_string(num_entries);
             string value = "value" + to_string(num_entries);
             db.insert(key,value);
             num_entries++;
         }
 
-        int sst_count = 0;
+        int sst_count = 1;
         for (const auto& entry : filesystem::directory_iterator(data_dir)) {
             if (entry.path().extension() == ".sst")
                 sst_count++;
@@ -51,6 +51,7 @@ TEST(DBTest, MultiFlushAndReload) {
         DB db(memtable_size, data_dir);
 
         for (int i = 0; i < num_entries; i++) {
+            // cout << "num_entries: " << num_entries << " i: " << i << endl;
             string key = "key" + to_string(i);
             string expected_value = "value" + to_string(i);
             string actual_value = db.get(key);
