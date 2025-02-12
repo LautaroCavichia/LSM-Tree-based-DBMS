@@ -16,11 +16,24 @@ class DB {
     
         void flush_memtable() {
             auto sorted_table = mem_table.get_sorted_table();
-            SSTable sstable(db_path + "/sst_" + to_string(sstable_count++));
+            SSTable sstable(db_path + "/sst_" + to_string(sstable_count++) + ".sst" );
             sstable.write(sorted_table);
             sstables.push_back(sstable);
             mem_table.clear();
             wal.clear();
+        }
+
+        void load_existing_sstables() {
+            for (const auto& entry : filesystem::directory_iterator(db_path)) {
+                if (entry.path().extension() == ".sst") {
+                    SSTable sstable(entry.path());
+                    sstables.push_back(sstable);
+                }
+            }
+
+            sort(sstables.begin(), sstables.end(), []( SSTable a, SSTable b) {
+                return a.get_min_key() < b.get_min_key();
+            });
         }
 
     public:
@@ -28,15 +41,8 @@ class DB {
             : mem_table(memtable_size), wal(path + "/wal.log"), db_path(path) {
 
                 filesystem::create_directory(path);
+                load_existing_sstables();
                 wal.rebuild(mem_table); // recover from WAL
-
-                // load existing SSTables from disk
-                for (const auto& entry : filesystem::directory_iterator(path)) {
-                    if (entry.path().extension() == ".sst") {
-                        SSTable sstable(entry.path());
-                        sstables.push_back(sstable);
-                    }
-                }
         }
 
         ~DB() {

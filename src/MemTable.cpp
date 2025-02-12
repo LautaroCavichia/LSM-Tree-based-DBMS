@@ -27,6 +27,7 @@ class MemTable {
                 current_size -= it->second.size();
             table[key] = value;
             current_size += value.size() + key.size();
+            // cout << "Current MemTable size: " << current_size << endl;
             return current_size > max_size; // signal to flush to disk
         }
 

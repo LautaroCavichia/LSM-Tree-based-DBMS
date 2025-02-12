@@ -108,4 +108,35 @@ class SSTable {
             }
             return "";
         }
+
+        const string get_min_key() {
+            ifstream in(file_path, ios::binary);
+            if (!in.is_open()) return "";
+
+            uint32_t magic, table_size, index_interval;
+            in.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+            in.read(reinterpret_cast<char*>(&table_size), sizeof(table_size));
+            in.read(reinterpret_cast<char*>(&index_interval), sizeof(index_interval));
+
+            if (magic != 0x535354) return ""; 
+
+            in.seekg(-static_cast<int>(sizeof(uint32_t)), ios::end); // move to index_size position
+            uint32_t index_size;
+            in.read(reinterpret_cast<char*>(&index_size), sizeof(index_size));
+            sparse_index.resize(index_size);
+
+            in.seekg(-static_cast<int>(sizeof(uint32_t)) + index_size * (sizeof(uint64_t) + 256), ios::end); // move to the first index entry
+
+            for(uint32_t i = 0; i < index_size; i++) {
+                uint32_t key_size;
+                in.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
+                string key(key_size, '\0');
+                in.read(&key[0], key_size);
+                uint64_t offset;
+                in.read(reinterpret_cast<char*>(&offset), sizeof(offset));
+                sparse_index[i] = {key, offset};
+            }
+
+            return sparse_index[0].first;
+        }
 };

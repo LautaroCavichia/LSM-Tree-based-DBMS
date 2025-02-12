@@ -21,6 +21,7 @@ class WAL {
 
         void write(string& key, string& value) {
             log_file << key << "," << value << "\n";
+            // cout << "Written in WAL: " << key << "," << value << endl;
         }
 
         void rebuild(MemTable& mem_table) {
