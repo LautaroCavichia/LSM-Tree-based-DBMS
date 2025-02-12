@@ -11,7 +11,7 @@ A lightweight, LSM-Tree-based key-value store inspired by modern storage engines
 - **SSTables with Sparse Indexing**: Efficient range queries and point lookups.
 - **Crash Recovery**: Write-ahead logging (WAL) for durability.
 - **MemTable Flushing**: Automatically flushed to disk (.sst files) when full.
-- **Compaction Support**(working on it): Background merging of SSTables (WIP).
+- *Compaction Support(working on it)*: Background merging of SSTables (WIP).
 
 ## Getting Started
 ### Prerequisites
@@ -32,7 +32,7 @@ make
 ### Usage Example
 ```cpp
 int main() {
-    MapleDB::DB db(1024 * 1024, "./data"); // 1MB MemTable
+    DB db(1024 * 1024, "./data"); // 1MB MemTable
     db.insert("name", "Alice");
     std::cout << db.get("name") << std::endl;
     return 0;
