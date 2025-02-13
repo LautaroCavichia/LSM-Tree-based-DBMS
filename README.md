@@ -1,6 +1,6 @@
 # LSM-Tree-based DBMS 
 
-A lightweight, LSM-Tree-based key-value store inspired by modern storage engines like LevelDB and RocksDB. Built in C++ for high performance and durability.
+A lightweight, LSM-Tree-based key-value store inspired by modern storage engines like LevelDB and RocksDB and my reading on *Designing Data-Intensive Applications* from Martin Kleppmann. Built in C++ for high performance and durability.
 
 [![C++](https://img.shields.io/badge/C++-17%2F20-blue.svg)](https://en.cppreference.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
