@@ -59,7 +59,7 @@ class DB {
 
         void compactionLoop() {
             while (true){
-                this_thread::sleep_for(chrono::seconds(5));
+                this_thread::sleep_for(chrono::seconds(40));
 
                 if (!compaction_running) break;
                 compactSSTables();
