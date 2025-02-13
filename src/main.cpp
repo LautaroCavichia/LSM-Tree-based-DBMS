@@ -1,22 +1,31 @@
 #include "DB.cpp"
+#include "PerformanceChrono.cpp"
 
 int main() {
-    DB db(1024 * 1024, "./data"); // 1MB memtable size
-    uint32_t iterations = 1000;
+    const string test_dir = "./benchmark_data";
+    filesystem::remove_all(test_dir);
+    DB db(1024 * 10, test_dir); //  2MB memtable size
 
-    // write
-    for (int i = 0; i < iterations; i++) {
-        string key = "key" + to_string(i);
-        string value = "value" + to_string(i);
-        db.insert(key, value);
+    // Benchmark inserting 100,000 entries
+    {
+        PerformanceChrono timer("Insert 1000000 entries");
+        for (int i = 0; i < 1000; i++) {
+            string key = "key" + to_string(i);
+            key = "key" + string(10 - key.size(), '0') + key.substr(3);
+            string value = "value" + to_string(i);
+            db.insert(key, value);
+        }
+        timer.stop();
     }
 
-    // read
-    for (int i = 0; i < iterations; i++) {
-        string key = "key" + to_string(i);
-        cout << key << " : " << db.get(key) << endl;
+    // Benchmark reading 100,000 entries
+    {
+        PerformanceChrono timer("Read 1000000 entries");
+        for (int i = 0; i < 1000; i++) {
+            string key = "key" + to_string(i);
+            string value = db.get(key);
+        }
+        timer.stop();
     }
-
     return 0;
-
 }

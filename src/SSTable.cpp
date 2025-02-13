@@ -10,12 +10,20 @@ class SSTable {
     private:
         string file_path;
         vector<pair<string, uint64_t>> sparse_index; // key, offset
-        uint32_t index_interval = 128; 
+        uint32_t index_interval = 64; 
 
         void write_string(ofstream& out, const string& s) {
             uint32_t size = s.size();
             out.write(reinterpret_cast<const char*>(&size), sizeof(size));
             out.write(s.c_str(), size);
+        }
+
+        string read_string(ifstream& in) {
+            uint32_t size;
+            in.read(reinterpret_cast<char*>(&size), sizeof(size));
+            string s(size, '\0');
+            in.read(&s[0], size);
+            return s;
         }
 
     public:
@@ -77,10 +85,7 @@ class SSTable {
             in.seekg(-static_cast<int>(sizeof(uint32_t)) + index_size * (sizeof(uint64_t) + 256), ios::end); // move to the first index entry
 
             for(uint32_t i = 0; i < index_size; i++) {
-                uint32_t key_size;
-                in.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
-                string key(key_size, '\0');
-                in.read(&key[0], key_size);
+                string key = read_string(in);
                 uint64_t offset;
                 in.read(reinterpret_cast<char*>(&offset), sizeof(offset));
                 sparse_index[i] = {key, offset};
@@ -109,34 +114,29 @@ class SSTable {
             return "";
         }
 
-        const string get_min_key() {
-            ifstream in(file_path, ios::binary);
-            if (!in.is_open()) return "";
+        string get_path() {
+            return file_path;
+        }
 
-            uint32_t magic, table_size, index_interval;
+
+        map<string, string> read_all() {
+            map<string, string> tables;
+            ifstream in(file_path, ios::binary);
+            if (!in.is_open()) return tables;
+
+            uint32_t magic, num_entries, index_interval;
             in.read(reinterpret_cast<char*>(&magic), sizeof(magic));
-            in.read(reinterpret_cast<char*>(&table_size), sizeof(table_size));
+            in.read(reinterpret_cast<char*>(&num_entries), sizeof(num_entries));
             in.read(reinterpret_cast<char*>(&index_interval), sizeof(index_interval));
 
-            if (magic != 0x535354) return ""; 
+            if (magic != 0x535354) return tables;
 
-            in.seekg(-static_cast<int>(sizeof(uint32_t)), ios::end); // move to index_size position
-            uint32_t index_size;
-            in.read(reinterpret_cast<char*>(&index_size), sizeof(index_size));
-            sparse_index.resize(index_size);
-
-            in.seekg(-static_cast<int>(sizeof(uint32_t)) + index_size * (sizeof(uint64_t) + 256), ios::end); // move to the first index entry
-
-            for(uint32_t i = 0; i < index_size; i++) {
-                uint32_t key_size;
-                in.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
-                string key(key_size, '\0');
-                in.read(&key[0], key_size);
-                uint64_t offset;
-                in.read(reinterpret_cast<char*>(&offset), sizeof(offset));
-                sparse_index[i] = {key, offset};
+            for (uint32_t i = 0; i < num_entries; i++) {
+                string key = read_string(in);
+                string value = read_string(in);
+                tables[key] = value;
             }
-
-            return sparse_index[0].first;
+            
+            return tables;
         }
 };

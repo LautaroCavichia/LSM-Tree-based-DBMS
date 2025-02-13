@@ -3,6 +3,7 @@
 
 TEST(DBTest, RecoveryAfterCrash) {
     string data_dir = "./test_data";
+    filesystem::remove_all(data_dir);
     {
         DB db (1024, data_dir);
         string key = "name";
@@ -16,6 +17,7 @@ TEST(DBTest, RecoveryAfterCrash) {
         string value = db.get(key);
         EXPECT_EQ(value, "Alice");
     }
+    filesystem::remove_all(data_dir);
 }
 
 TEST(DBTest, MultiFlushAndReload) {
@@ -60,6 +62,37 @@ TEST(DBTest, MultiFlushAndReload) {
 
         }
     }
+
+    filesystem::remove_all(data_dir);
+}
+
+TEST(DBTest, CompactionMergesSSTables) {
+    const string data_dir = "./test_data_compaction";
+    filesystem::remove_all(data_dir);
+
+    {
+        DB db(20, data_dir);
+        for (int i = 0; i < 5; i++) {
+            string key = "key" + to_string(i);
+            string value = "value" + to_string(i);
+            db.insert(key, value);
+        }
+    }
+
+    {
+        DB db(20, data_dir);
+        
+        // wait for compaction to finish
+        this_thread::sleep_for(chrono::seconds(15));
+    }
+
+    int sst_count = 0;
+    for (const auto& entry : filesystem::directory_iterator(data_dir)) {
+        if (entry.path().extension() == ".sst")
+            sst_count++;
+    }
+
+    ASSERT_EQ(sst_count, 1) << "Expected 1 table after compaction";
 
     filesystem::remove_all(data_dir);
 }
