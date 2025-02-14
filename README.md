@@ -14,7 +14,8 @@ A lightweight, LSM-Tree-based key-value store inspired by modern storage engines
 - *Compaction Support(working on it)*: Background merging of SSTables (WIP).
 
 ## Performance
-| MemtableSizeKB | InsertTimeMs | Insert µs/op | Insert op/s | Insert MB/s | ReadTimeMs | Read µs/op | Read op/s | Read MB/s |
+I'tested both sequential insertion and reading with 100,000 different key-values and varying the memtable size: 
+| Memtable size KB | Insert ms | Insert µs/op | Insert op/s | Insert MB/s | Read ms | Read µs/op | Read op/s | Read MB/s |
 |---------------|------------|------------|------------|------------|------------|------------|------------|------------|
 | 512          | 545        | 5.45       | 183,486    | 1.468      | 2262       | 22.62      | 44,200     | 0.354      |
 | 768          | 570        | 5.70       | 175,439    | 1.404      | 1567       | 15.67      | 63,832     | 0.511      |
